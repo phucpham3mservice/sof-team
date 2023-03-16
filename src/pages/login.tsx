@@ -1,6 +1,6 @@
 import { signIn, signOut, useSession } from "next-auth/react";
 
-export default function Login(props: any) {
+export default function Login() {
   const { data: session } = useSession();
 
   if (session) {
