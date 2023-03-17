@@ -1,14 +1,18 @@
 import { signIn, signOut, useSession } from "next-auth/react";
 import React from "react";
+import jwt from "jsonwebtoken";
+import { GetServerSidePropsContext } from "next";
+import { getServerSession } from "next-auth";
+import { authOptions } from "./api/auth/[...nextauth]";
 
-export default function Login() {
+export default function Login(props: any) {
   const { data: session } = useSession();
 
   React.useEffect(() => {
     if (session) {
       window.addEventListener("message", (event) => {
         if (event.data?.foo) {
-          window.opener.postMessage({ msg: session }, "*");
+          window.opener.postMessage({ msg: props.token }, "*");
           window.close();
         }
       });
@@ -85,4 +89,16 @@ export default function Login() {
       />
     </div>
   );
+}
+
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const session = await getServerSession(context.req, context.res, authOptions);
+  const token =
+    session &&
+    jwt.sign(session, process.env.SECRET || "TEST", {
+      expiresIn: "1m",
+    });
+  return {
+    props: { token },
+  };
 }
